@@ -1,0 +1,191 @@
+﻿<%@ Master Language="VB" AutoEventWireup="true" CodeBehind="Site.master.vb" Inherits="StudyBuddy.SiteMaster" %>
+<%@ Register Src="~/ViewSwitcher.ascx" TagPrefix="friendlyUrls" TagName="ViewSwitcher" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%: Page.Title %> - Study Buddy</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        body { margin: 0; font-family: 'Nunito', sans-serif; background-color: #f6fff8; }
+        .layout { display: flex; min-height: 100vh; }
+
+        /* SIDEBAR DEFAULT */
+        .sidebar {
+            width: 70px;
+            background-color: #dcedc8;
+            padding: 20px 10px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .sidebar.active { width: 260px; } /* Ginawa kong 260px para kasya ang logout button */
+
+        .toggle-btn {
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            color: #4a7c5e;
+            font-size: 20px;
+        }
+
+        /* HEADER / LOGO STYLE */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-left: 5px;
+        }
+
+        .app-logo {
+            width: 45px; /* Pinalaki */
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%; /* Ginawang bilog */
+            border: 2px solid #4a7c5e;
+            flex-shrink: 0;
+        }
+
+        .app-title {
+            font-size: 20px;
+            color: #4a7c5e;
+            margin: 0;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .sidebar.active .app-title { display: block; }
+
+        /* PROFILE SECTION WITH LOGOUT */
+        .user-profile-sidebar {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 25px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .nav-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2e7d32;
+            min-width: 45px;
+        }
+
+        .user-info-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-left: 12px;
+            display: none;
+        }
+
+        .sidebar.active .user-info-wrapper { display: flex; }
+
+        .user-details { white-space: nowrap; }
+        .nav-username { display: block; font-weight: bold; color: #1b5e20; font-size: 14px; }
+        .nav-role { display: block; font-size: 11px; color: #4a7c5e; }
+
+        .btn-logout {
+            color: #d32f2f;
+            font-size: 18px;
+            transition: 0.3s;
+            padding: 5px;
+        }
+        .btn-logout:hover { color: #b71c1c; transform: scale(1.1); }
+
+        /* LIST STYLES */
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li { margin: 8px 0; }
+        .sidebar a {
+            text-decoration: none; color: #2e7d32; font-weight: bold; font-size: 16px;
+            padding: 12px; border-radius: 12px; background-color: #f1f8e9;
+            display: flex; align-items: center; transition: 0.3s; white-space: nowrap;
+        }
+        .sidebar a i { font-size: 20px; min-width: 35px; text-align: center; }
+        .link-name { margin-left: 15px; opacity: 0; transition: 0.2s; }
+        .sidebar.active .link-name { opacity: 1; }
+        .sidebar a:hover { background-color: #c8e6c9; }
+
+        .main-content { flex-grow: 1; padding: 30px; margin-left: 70px; transition: all 0.3s ease; }
+        .sidebar.active ~ .main-content { margin-left: 260px; }
+    </style>
+</head>
+<body>
+    <form runat="server">
+
+        <div class="layout">
+            <div class="sidebar" id="sidebar">
+                <div class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars" id="btn-toggle"></i>
+                </div>
+
+                <div class="sidebar-header">
+                    <img src="STUDYBUDDY.png" alt="Logo" class="app-logo" />
+                    <h3 class="app-title">Study Buddy</h3>
+                </div>
+
+                <div class="user-profile-sidebar">
+                    <asp:Image ID="imgNavProfile" runat="server" CssClass="nav-avatar" ImageUrl="~/images/default-profile.png" />
+                    <div class="user-info-wrapper">
+                        <div class="user-details">
+                            <asp:Label ID="lblNavUsername" runat="server" Text="Guest User" CssClass="nav-username"></asp:Label>
+                            <asp:Label ID="lblNavRole" runat="server" Text="Student" CssClass="nav-role"></asp:Label>
+                        </div>
+                        <asp:LinkButton ID="btnLogout" runat="server" CssClass="btn-logout" OnClick="btnLogout_Click" ToolTip="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </asp:LinkButton>
+                    </div>
+                </div>
+
+                <ul>
+                    <li><a href="BuddyBoard.aspx"><i class="fas fa-chalkboard"></i><span class="link-name">Buddy Board</span></a></li>
+                    <li><a href="Resources.aspx"><i class="fas fa-book"></i><span class="link-name">Resources</span></a></li>
+                    <li><a href="Chatroom.aspx"><i class="fas fa-comments"></i><span class="link-name">Chatroom</span></a></li>
+                    <li><a href="Tutoring.aspx"><i class="fas fa-hands-helping"></i><span class="link-name">Tutoring</span></a></li>
+                    <li><a href="Profile.aspx"><i class="fas fa-user"></i><span class="link-name">Profile</span></a></li>
+                    <li><a href="Notification.aspx"><i class="fas fa-bell"></i><span class="link-name">Notifications</span></a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+                <friendlyUrls:ViewSwitcher runat="server" />
+            </div>
+        </div>
+    </form>
+
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const btn = document.getElementById("btn-toggle");
+            sidebar.classList.toggle("active");
+            if (sidebar.classList.contains("active")) {
+                btn.classList.replace("fa-bars", "fa-arrow-left");
+            } else {
+                btn.classList.replace("fa-arrow-left", "fa-bars");
+            }
+        }
+    </script>
+</body>
+</html>
+
